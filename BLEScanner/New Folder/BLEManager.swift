@@ -10,6 +10,7 @@ import CoreBluetooth
 import Foundation
 
 // MARK: - BLEManager
+@MainActor
 final class BLEManager: NSObject, ObservableObject {
     
     @Published var isOn: Bool = false
@@ -25,12 +26,19 @@ final class BLEManager: NSObject, ObservableObject {
     }
     
     func startScanning() {
+        guard centralManager.state == .poweredOn else { return }
         peripherals.removeAll()
         centralManager.scanForPeripherals(withServices: nil)
     }
     
     func stopScanning() {
+        guard centralManager.state == .poweredOn else { return }
         centralManager.stopScan()
+    }
+    
+    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+        print("Connected to \(peripheral.name ?? "Unknown Device")")
+        peripheral.discoverServices(nil)
     }
 }
 
